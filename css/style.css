@@ -1,0 +1,581 @@
+/* ==========================================================================
+   Clone Finder - Estilos
+   Paleta: roxo (primária) + laranja (destaque)
+   ========================================================================== */
+
+:root {
+    --roxo-900: #2e1065;
+    --roxo-700: #5b21b6;
+    --roxo-600: #6d28d9;
+    --roxo-500: #7c3aed;
+    --roxo-100: #ede9fe;
+    --roxo-50:  #f5f3ff;
+
+    --laranja-600: #ea580c;
+    --laranja-500: #f97316;
+    --laranja-100: #ffedd5;
+
+    --cinza-900: #1f1b2e;
+    --cinza-600: #5f5a73;
+    --cinza-300: #d9d5e6;
+    --cinza-100: #f3f1f9;
+    --branco:    #ffffff;
+
+    --sombra: 0 8px 24px rgba(46, 16, 101, 0.10);
+    --raio: 12px;
+    --transicao: 160ms ease;
+}
+
+/* --- Base ---------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--cinza-900);
+    background: var(--cinza-100);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+code {
+    font-family: "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+}
+
+.container {
+    width: min(1100px, 100% - 32px);
+    margin-inline: auto;
+}
+
+/* --- Topo ---------------------------------------------------------------- */
+
+.topo {
+    background: linear-gradient(135deg, var(--roxo-900) 0%, var(--roxo-600) 100%);
+    color: var(--branco);
+    padding: 28px 0;
+    box-shadow: var(--sombra);
+}
+
+.topo__conteudo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.topo__marca {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.topo__logo {
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--raio);
+    background: var(--laranja-500);
+    color: var(--branco);
+    flex-shrink: 0;
+}
+
+.topo__logo svg {
+    width: 26px;
+    height: 26px;
+}
+
+.topo__titulo {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.topo__subtitulo {
+    margin: 2px 0 0;
+    font-size: 0.9rem;
+    opacity: 0.85;
+}
+
+/* --- Busca --------------------------------------------------------------- */
+
+.busca {
+    margin: 28px 0 20px;
+}
+
+.busca__rotulo {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--cinza-600);
+    margin-bottom: 8px;
+}
+
+.busca__campo {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.busca__icone {
+    position: absolute;
+    left: 16px;
+    width: 20px;
+    height: 20px;
+    color: var(--roxo-500);
+    pointer-events: none;
+}
+
+#campo-busca {
+    width: 100%;
+    padding: 14px 44px 14px 48px;
+    font: inherit;
+    font-size: 1rem;
+    color: var(--cinza-900);
+    background: var(--branco);
+    border: 2px solid var(--cinza-300);
+    border-radius: var(--raio);
+    outline: none;
+    transition: border-color var(--transicao), box-shadow var(--transicao);
+}
+
+#campo-busca::-webkit-search-cancel-button {
+    display: none;
+}
+
+#campo-busca:focus {
+    border-color: var(--roxo-500);
+    box-shadow: 0 0 0 4px var(--roxo-100);
+}
+
+.busca__limpar {
+    position: absolute;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--cinza-600);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background var(--transicao), color var(--transicao);
+}
+
+.busca__limpar:hover {
+    background: var(--roxo-100);
+    color: var(--roxo-700);
+}
+
+.busca__resumo {
+    margin: 10px 0 0;
+    font-size: 0.85rem;
+    color: var(--cinza-600);
+    min-height: 1.3em;
+}
+
+.busca__resumo strong {
+    color: var(--roxo-700);
+}
+
+/* --- Tabela -------------------------------------------------------------- */
+
+.tabela-wrapper {
+    background: var(--branco);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
+    overflow: hidden;
+    margin-bottom: 32px;
+}
+
+.tabela {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabela th,
+.tabela td {
+    padding: 14px 18px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.tabela thead th {
+    background: var(--roxo-50);
+    color: var(--roxo-700);
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 2px solid var(--roxo-100);
+}
+
+.tabela tbody tr {
+    border-bottom: 1px solid var(--cinza-100);
+    transition: background var(--transicao);
+}
+
+.tabela tbody tr:last-child {
+    border-bottom: 0;
+}
+
+.tabela tbody tr:hover {
+    background: var(--roxo-50);
+}
+
+.tabela__acao {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.tabela__cliente {
+    font-weight: 600;
+}
+
+.tabela__banco {
+    font-family: "Cascadia Code", Consolas, monospace;
+    font-size: 0.88rem;
+    color: var(--cinza-600);
+}
+
+/* Destaque do trecho pesquisado */
+mark {
+    background: var(--laranja-100);
+    color: var(--laranja-600);
+    border-radius: 3px;
+    padding: 0 2px;
+}
+
+/* Linhas de estado (carregando / vazio / erro) */
+.tabela .estado td {
+    text-align: center;
+    padding: 40px 18px;
+    color: var(--cinza-600);
+}
+
+.tabela .estado--erro td {
+    color: var(--laranja-600);
+}
+
+.tabela .estado--erro small {
+    display: block;
+    margin-top: 6px;
+    color: var(--cinza-600);
+}
+
+/* --- Badge do servidor --------------------------------------------------- */
+
+.servidor {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background: var(--roxo-100);
+    color: var(--roxo-700);
+}
+
+/* --- Botões de ação (Clonar / Head) -------------------------------------- */
+
+.botao {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border-radius: 8px;
+    color: var(--branco);
+    font-weight: 600;
+    font-size: 0.88rem;
+    text-decoration: none;
+    transition: background var(--transicao), transform var(--transicao), box-shadow var(--transicao);
+}
+
+.botao svg {
+    width: 16px;
+    height: 16px;
+}
+
+.botao:hover {
+    transform: translateY(-1px);
+}
+
+.botao:focus-visible {
+    outline: 3px solid var(--roxo-500);
+    outline-offset: 2px;
+}
+
+.botao--clonar {
+    background: var(--laranja-500);
+}
+
+.botao--clonar:hover {
+    background: var(--laranja-600);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
+}
+
+.botao--head {
+    background: var(--roxo-600);
+}
+
+.botao--head:hover {
+    background: var(--roxo-700);
+    box-shadow: 0 4px 12px rgba(109, 40, 217, 0.35);
+}
+
+.botao--head:focus-visible {
+    outline-color: var(--laranja-500);
+}
+
+.botao {
+    border: 0;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.botao--secundario {
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.botao--secundario:hover {
+    background: rgba(255, 255, 255, 0.24);
+}
+
+.botao--neutro {
+    background: var(--cinza-100);
+    color: var(--cinza-900);
+}
+
+.botao--neutro:hover {
+    background: var(--cinza-300);
+}
+
+/* --- Cabeçalho: ações ---------------------------------------------------- */
+
+.topo__acoes {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* --- Clientes adicionados manualmente ------------------------------------ */
+
+.tag-novo {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: var(--laranja-100);
+    color: var(--laranja-600);
+    vertical-align: middle;
+}
+
+.botao-remover {
+    margin-left: 4px;
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--cinza-600);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    vertical-align: middle;
+    transition: background var(--transicao), color var(--transicao);
+}
+
+.botao-remover:hover {
+    background: var(--laranja-100);
+    color: var(--laranja-600);
+}
+
+/* --- Diálogo de cadastro ------------------------------------------------- */
+
+.dialogo {
+    width: min(440px, 100% - 32px);
+    padding: 0;
+    border: 0;
+    border-radius: var(--raio);
+    box-shadow: 0 24px 64px rgba(46, 16, 101, 0.35);
+    color: var(--cinza-900);
+}
+
+.dialogo::backdrop {
+    background: rgba(46, 16, 101, 0.45);
+}
+
+.dialogo__form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px;
+}
+
+.dialogo__titulo {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--roxo-700);
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.campo__rotulo {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--cinza-600);
+}
+
+.campo__ajuda {
+    font-size: 0.78rem;
+    color: var(--cinza-600);
+}
+
+.campo input,
+.campo select {
+    width: 100%;
+    padding: 10px 12px;
+    font: inherit;
+    color: var(--cinza-900);
+    background: var(--branco);
+    border: 2px solid var(--cinza-300);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color var(--transicao), box-shadow var(--transicao);
+}
+
+.campo input:focus,
+.campo select:focus {
+    border-color: var(--roxo-500);
+    box-shadow: 0 0 0 4px var(--roxo-100);
+}
+
+.campo [aria-invalid="true"] {
+    border-color: var(--laranja-500);
+}
+
+.dialogo__erro {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: var(--laranja-100);
+    color: var(--laranja-600);
+}
+
+.dialogo__acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* --- Rodapé -------------------------------------------------------------- */
+
+.rodape {
+    padding: 16px 0;
+    font-size: 0.8rem;
+    color: var(--cinza-600);
+    text-align: center;
+}
+
+/* --- Responsivo ---------------------------------------------------------- */
+
+@media (max-width: 640px) {
+    .topo__conteudo {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .topo__acoes {
+        justify-content: stretch;
+    }
+
+    .topo__acoes .botao {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .tabela thead {
+        display: none;
+    }
+
+    .tabela tbody tr {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 4px 12px;
+        padding: 12px 16px;
+    }
+
+    .tabela td {
+        padding: 2px 0;
+    }
+
+    .tabela td:not(.tabela__acao) {
+        grid-column: 1;
+    }
+
+    .tabela td:nth-child(1) { grid-row: 1; }
+    .tabela td:nth-child(2) { grid-row: 2; }
+    .tabela td:nth-child(3) { grid-row: 3; }
+
+    .tabela .estado td {
+        grid-row: auto;
+    }
+
+    .tabela td.tabela__acao {
+        grid-column: 2;
+        width: auto;
+    }
+
+    /* Clonar na 1ª linha, Head logo abaixo, ambos à direita */
+    .tabela td.tabela__acao:nth-last-child(2) {
+        grid-row: 1;
+    }
+
+    .tabela td.tabela__acao:last-child {
+        grid-row: 2;
+    }
+
+    .tabela__acao .botao {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .tabela__banco {
+        overflow-wrap: anywhere;
+    }
+
+    .tabela .estado {
+        display: table-row;
+    }
+}
