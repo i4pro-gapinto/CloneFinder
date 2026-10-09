@@ -22,7 +22,6 @@
     var $resumo = $('#resumo');
 
     var $botaoAdicionar = $('#botao-adicionar');
-    var $botaoExportar = $('#botao-exportar');
     var dialogo = document.getElementById('dialogo-cliente');
     var $form = $('#form-cliente');
     var $campoCliente = $('#campo-cliente');
@@ -106,7 +105,9 @@
         if (!cliente.adicionado) {
             return '';
         }
-        return '<span class="tag-novo" title="Cadastrado nesta tela e salvo apenas neste navegador">novo</span>' +
+        var dica = 'Cliente inserido localmente, salvo apenas neste navegador. ' +
+            'Outras pessoas não o veem e ele não faz parte do clientes.json.';
+        return '<span class="tag-local" tabindex="0" data-dica="' + dica + '" aria-label="Local: ' + dica + '">local</span>' +
             '<button type="button" class="botao-remover" title="Remover cliente cadastrado" aria-label="Remover ' +
             escaparHtml(cliente.cliente) + '" data-banco="' + escaparHtml(cliente.banco) +
             '" data-servidor="' + escaparHtml(cliente.servidor) + '">&times;</button>';
@@ -221,7 +222,7 @@
     }
 
     // Junta os clientes do arquivo com os cadastrados na tela. Cadastrados que já
-    // passaram a existir no arquivo (ex.: após exportar) são descartados do navegador.
+    // passaram a existir no arquivo são descartados do navegador.
     function montarListaClientes() {
         var pendentes = $.grep(clientesAdicionados, function (c) { return !existeNoArquivo(c); });
         if (pendentes.length !== clientesAdicionados.length) {
@@ -233,7 +234,6 @@
             return $.extend({}, c, { adicionado: true });
         });
         clientes = ordenarPorCliente(clientesArquivo.concat(marcados));
-        $botaoExportar.prop('hidden', clientesAdicionados.length === 0);
         aplicarBusca();
     }
 
@@ -404,50 +404,10 @@
     }
 
     // ------------------------------------------------------------------
-    // Exportação (gera clientes.json e clientes.js atualizados)
-    // ------------------------------------------------------------------
-
-    function baixarArquivo(nome, conteudo, tipo) {
-        var blob = new Blob([conteudo], { type: tipo });
-        var url = URL.createObjectURL(blob);
-        var $link = $('<a>').attr({ href: url, download: nome }).appendTo('body');
-        $link[0].click();
-        $link.remove();
-        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-    }
-
-    function dataHoraLocal() {
-        var agora = new Date();
-        var deslocamento = agora.getTimezoneOffset() * 60000;
-        return new Date(agora - deslocamento).toISOString().slice(0, 19);
-    }
-
-    function exportarClientes() {
-        var dados = {
-            geradoEm: dataHoraLocal(),
-            servidores: servidores,
-            clientes: $.map(clientes, function (c) {
-                return { cliente: c.cliente, banco: c.banco, servidor: c.servidor };
-            })
-        };
-        var json = JSON.stringify(dados, null, 4);
-
-        baixarArquivo('clientes.json', json, 'application/json;charset=utf-8');
-        baixarArquivo('clientes.js', 'window.CLONE_FINDER_DADOS = ' + json + ';\n', 'application/javascript;charset=utf-8');
-
-        window.alert(
-            'Foram baixados clientes.json e clientes.js.\n\n' +
-            'Substitua os arquivos da pasta "data" do Clone Finder por eles para que ' +
-            'os clientes cadastrados fiquem disponíveis para todos.'
-        );
-    }
-
-    // ------------------------------------------------------------------
     // Eventos
     // ------------------------------------------------------------------
 
     $botaoAdicionar.on('click', abrirCadastro);
-    $botaoExportar.on('click', exportarClientes);
     $('#botao-cancelar').on('click', fecharCadastro);
     $form.on('submit', salvarCadastro);
 

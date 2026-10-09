@@ -203,9 +203,14 @@ code {
     background: var(--branco);
     border-radius: var(--raio);
     box-shadow: var(--sombra);
-    overflow: hidden;
     margin-bottom: 32px;
 }
+
+/* Cantos arredondados sem overflow: hidden, que cortaria a dica da tag LOCAL */
+.tabela thead th:first-child { border-top-left-radius: var(--raio); }
+.tabela thead th:last-child  { border-top-right-radius: var(--raio); }
+.tabela tbody tr:last-child td:first-child { border-bottom-left-radius: var(--raio); }
+.tabela tbody tr:last-child td:last-child  { border-bottom-right-radius: var(--raio); }
 
 .tabela {
     width: 100%;
@@ -353,15 +358,6 @@ mark {
     cursor: pointer;
 }
 
-.botao--secundario {
-    background: rgba(255, 255, 255, 0.14);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
-}
-
-.botao--secundario:hover {
-    background: rgba(255, 255, 255, 0.24);
-}
-
 .botao--neutro {
     background: var(--cinza-100);
     color: var(--cinza-900);
@@ -382,7 +378,8 @@ mark {
 
 /* --- Clientes adicionados manualmente ------------------------------------ */
 
-.tag-novo {
+.tag-local {
+    position: relative;
     display: inline-block;
     margin-left: 8px;
     padding: 1px 8px;
@@ -394,6 +391,47 @@ mark {
     background: var(--laranja-100);
     color: var(--laranja-600);
     vertical-align: middle;
+    cursor: help;
+}
+
+.tag-local:focus-visible {
+    outline: 2px solid var(--laranja-500);
+    outline-offset: 2px;
+}
+
+/* Dica exibida ao passar o mouse (ou focar pelo teclado) */
+.tag-local::after {
+    content: attr(data-dica);
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 8px);
+    z-index: 10;
+    width: max-content;
+    max-width: min(320px, 80vw);
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--cinza-900);
+    color: var(--branco);
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.4;
+    text-transform: none;
+    letter-spacing: normal;
+    white-space: normal;
+    text-align: left;
+    box-shadow: var(--sombra);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(4px);
+    transition: opacity var(--transicao), transform var(--transicao), visibility var(--transicao);
+    pointer-events: none;
+}
+
+.tag-local:hover::after,
+.tag-local:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
 
 .botao-remover {
