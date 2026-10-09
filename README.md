@@ -66,6 +66,17 @@ A ordem dos clientes no arquivo não importa: a página ordena por cliente.
 Um mesmo banco pode existir em mais de um servidor; nesse caso, inclua uma
 entrada para cada servidor.
 
+## Adicionar cliente pela tela
+
+O botão **Adicionar cliente** abre um cadastro com os mesmos campos do JSON:
+
+- **Cliente**: letras, números, `_` e `-`.
+- **Banco de dados**: preenchido automaticamente como `<cliente>_erp_head`, mas pode ser alterado.
+- **Servidor**: lista fechada com os servidores de `servidores` no JSON (ou
+  FLASH, FENIX, CICLOPE e WOLVERINE). Não é possível digitar outro valor.
+
+Não é aceito um banco que já esteja cadastrado no mesmo servidor.
+
 ## Estrutura
 
 ```
