@@ -77,6 +77,23 @@ O botão **Adicionar cliente** abre um cadastro com os mesmos campos do JSON:
 
 Não é aceito um banco que já esteja cadastrado no mesmo servidor.
 
+O cliente cadastrado fica salvo **apenas no navegador de quem cadastrou**
+(`localStorage`) e aparece com a marca **LOCAL**. O **×** ao lado remove.
+
+## Alterar cliente pela tela
+
+O lápis ao lado do nome de qualquer cliente abre o mesmo formulário, já
+preenchido. A alteração também fica **apenas no navegador** (`localStorage`);
+o `clientes.json` nunca é modificado pela página.
+
+- Cliente cadastrado localmente: a alteração substitui o cadastro local.
+- Cliente do `clientes.json`: aparece com a marca **ALTERADO**. Ao passar o
+  mouse na marca, a página mostra os valores originais do arquivo, e o botão
+  de desfazer (↺) volta a usá-los.
+
+Alterações cujo cliente original saiu do `clientes.json`, ou que ficaram iguais
+ao arquivo, são descartadas automaticamente ao abrir a página.
+
 ## Estrutura
 
 ```

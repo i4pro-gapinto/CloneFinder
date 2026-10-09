@@ -434,10 +434,23 @@ mark {
     transform: translateY(0);
 }
 
-.botao-remover {
+.tag-local--alterado {
+    background: var(--roxo-100);
+    color: var(--roxo-700);
+}
+
+.tag-local--alterado:focus-visible {
+    outline-color: var(--roxo-500);
+}
+
+/* Botões ao lado do nome: editar, remover (local) e desfazer (alterado) */
+.botao-linha {
+    display: inline-grid;
+    place-items: center;
     margin-left: 4px;
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
+    padding: 0;
     border: 0;
     border-radius: 50%;
     background: transparent;
@@ -446,12 +459,39 @@ mark {
     line-height: 1;
     cursor: pointer;
     vertical-align: middle;
-    transition: background var(--transicao), color var(--transicao);
+    opacity: 0.45;
+    transition: background var(--transicao), color var(--transicao), opacity var(--transicao);
 }
 
-.botao-remover:hover {
+.botao-linha svg {
+    width: 15px;
+    height: 15px;
+}
+
+.tabela tbody tr:hover .botao-linha,
+.botao-linha:focus-visible {
+    opacity: 1;
+}
+
+.botao-linha:hover {
+    background: var(--roxo-100);
+    color: var(--roxo-700);
+}
+
+.botao-linha--perigo:hover {
     background: var(--laranja-100);
     color: var(--laranja-600);
+}
+
+.botao-linha:focus-visible {
+    outline: 2px solid var(--roxo-500);
+    outline-offset: 1px;
+}
+
+.dialogo__aviso {
+    margin: -4px 0 0;
+    font-size: 0.8rem;
+    color: var(--cinza-600);
 }
 
 /* --- Diálogo de cadastro ------------------------------------------------- */

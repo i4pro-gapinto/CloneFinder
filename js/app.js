@@ -13,7 +13,8 @@
         atrasoBuscaMs: 150,
         sufixoBanco: '_erp_head',
         servidoresPadrao: ['FLASH', 'FENIX', 'CICLOPE', 'WOLVERINE'],
-        chaveArmazenamento: 'cloneFinder.clientesAdicionados'
+        chaveArmazenamento: 'cloneFinder.clientesAdicionados',
+        chaveAlteracoes: 'cloneFinder.clientesAlterados'
     };
 
     var $campoBusca = $('#campo-busca');
@@ -28,12 +29,15 @@
     var $campoBanco = $('#campo-banco');
     var $campoServidor = $('#campo-servidor');
     var $erroCliente = $('#erro-cliente');
+    var $tituloDialogo = $('#dialogo-titulo');
 
-    var clientes = [];            // lista exibida (arquivo + adicionados)
+    var clientes = [];            // lista exibida (arquivo com alterações + adicionados)
     var clientesArquivo = [];     // vindos de data/clientes.json / clientes.js
     var clientesAdicionados = []; // cadastrados pela tela, guardados no navegador
+    var clientesAlterados = {};   // alterações locais de clientes do arquivo, por chaveRegistro() do original
     var servidores = CONFIG.servidoresPadrao.slice();
     var bancoEditadoManualmente = false;
+    var emEdicao = null;          // cliente exibido que está sendo alterado (null = cadastro novo)
     var temporizadorBusca = null;
 
     // ------------------------------------------------------------------
@@ -81,7 +85,11 @@
                 '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
         head:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
                 '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>' +
-                '<path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>'
+                '<path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>',
+        editar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+        desfazer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                '<path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>'
     };
 
     function renderizarBotao(classe, url, icone, texto) {
@@ -101,22 +109,46 @@
         $lista.html(html);
     }
 
-    function renderizarMarcaAdicionado(cliente) {
-        if (!cliente.adicionado) {
-            return '';
+    function renderizarTag(classe, texto, dica) {
+        var dicaSegura = escaparHtml(dica);
+        return '<span class="tag-local ' + classe + '" tabindex="0" data-dica="' + dicaSegura +
+            '" aria-label="' + escaparHtml(texto) + ': ' + dicaSegura + '">' + escaparHtml(texto) + '</span>';
+    }
+
+    function renderizarBotaoLinha(classe, acao, indice, titulo, conteudo) {
+        return '<button type="button" class="' + classe + '" data-acao="' + acao + '" data-indice="' + indice +
+            '" title="' + escaparHtml(titulo) + '" aria-label="' + escaparHtml(titulo) + '">' + conteudo + '</button>';
+    }
+
+    // Marca (LOCAL / ALTERADO) e botões de editar, remover e desfazer ao lado do nome
+    function renderizarControles(cliente) {
+        var html = '';
+        var nome = cliente.cliente;
+
+        if (cliente.adicionado) {
+            html += renderizarTag('', 'local',
+                'Cliente inserido localmente, salvo apenas neste navegador. ' +
+                'Outras pessoas não o veem e ele não faz parte do clientes.json.');
+        } else if (cliente.original) {
+            html += renderizarTag('tag-local--alterado', 'alterado',
+                'Cliente alterado localmente, apenas neste navegador. No clientes.json: ' +
+                cliente.original.cliente + ' / ' + cliente.original.banco + ' / ' + cliente.original.servidor + '.');
         }
-        var dica = 'Cliente inserido localmente, salvo apenas neste navegador. ' +
-            'Outras pessoas não o veem e ele não faz parte do clientes.json.';
-        return '<span class="tag-local" tabindex="0" data-dica="' + dica + '" aria-label="Local: ' + dica + '">local</span>' +
-            '<button type="button" class="botao-remover" title="Remover cliente cadastrado" aria-label="Remover ' +
-            escaparHtml(cliente.cliente) + '" data-banco="' + escaparHtml(cliente.banco) +
-            '" data-servidor="' + escaparHtml(cliente.servidor) + '">&times;</button>';
+
+        html += renderizarBotaoLinha('botao-linha', 'editar', cliente.indice, 'Alterar ' + nome, ICONES.editar);
+
+        if (cliente.adicionado) {
+            html += renderizarBotaoLinha('botao-linha botao-linha--perigo', 'remover', cliente.indice, 'Remover ' + nome, '&times;');
+        } else if (cliente.original) {
+            html += renderizarBotaoLinha('botao-linha', 'desfazer', cliente.indice, 'Desfazer alteração de ' + nome, ICONES.desfazer);
+        }
+        return html;
     }
 
     function renderizarLinha(cliente, termo) {
         return [
             '<tr>',
-            '  <td class="tabela__cliente">', destacar(cliente.cliente, termo), renderizarMarcaAdicionado(cliente), '</td>',
+            '  <td class="tabela__cliente">', destacar(cliente.cliente, termo), renderizarControles(cliente), '</td>',
             '  <td class="tabela__banco">', escaparHtml(cliente.banco), '</td>',
             '  <td class="tabela__servidor"><span class="servidor">', destacar(cliente.servidor, termo), '</span></td>',
             '  <td class="tabela__acao">',
@@ -217,23 +249,63 @@
                normalizar(a.servidor) === normalizar(b.servidor);
     }
 
+    function chaveRegistro(cliente) {
+        return normalizar(cliente.banco) + '|' + normalizar(cliente.servidor);
+    }
+
+    function mesmosValores(a, b) {
+        return a.cliente === b.cliente && a.banco === b.banco && a.servidor === b.servidor;
+    }
+
+    function dadosCliente(c) {
+        return { cliente: c.cliente, banco: c.banco, servidor: c.servidor };
+    }
+
     function existeNoArquivo(cliente) {
         return $.grep(clientesArquivo, function (c) { return mesmoRegistro(c, cliente); }).length > 0;
     }
 
-    // Junta os clientes do arquivo com os cadastrados na tela. Cadastrados que já
-    // passaram a existir no arquivo são descartados do navegador.
-    function montarListaClientes() {
+    // Descarta do navegador o que deixou de fazer sentido após o clientes.json mudar:
+    // cadastrados que passaram a existir no arquivo, alterações de clientes que saíram
+    // do arquivo e alterações iguais ao que já está no arquivo.
+    function limparArmazenamentoObsoleto() {
         var pendentes = $.grep(clientesAdicionados, function (c) { return !existeNoArquivo(c); });
         if (pendentes.length !== clientesAdicionados.length) {
             clientesAdicionados = pendentes;
             salvarAdicionados();
         }
 
-        var marcados = $.map(clientesAdicionados, function (c) {
-            return $.extend({}, c, { adicionado: true });
+        var porChave = {};
+        $.each(clientesArquivo, function (_, c) { porChave[chaveRegistro(c)] = c; });
+
+        var mudou = false;
+        $.each(clientesAlterados, function (chave, alterado) {
+            if (!porChave[chave] || mesmosValores(porChave[chave], alterado)) {
+                delete clientesAlterados[chave];
+                mudou = true;
+            }
         });
-        clientes = ordenarPorCliente(clientesArquivo.concat(marcados));
+        if (mudou) {
+            salvarAlteracoes();
+        }
+    }
+
+    // Junta os clientes do arquivo (com as alterações locais aplicadas) aos cadastrados na tela.
+    function montarListaClientes() {
+        limparArmazenamentoObsoleto();
+
+        var doArquivo = $.map(clientesArquivo, function (c) {
+            var alterado = clientesAlterados[chaveRegistro(c)];
+            return alterado
+                ? $.extend(dadosCliente(alterado), { original: dadosCliente(c) })
+                : dadosCliente(c);
+        });
+        var adicionados = $.map(clientesAdicionados, function (c) {
+            return $.extend(dadosCliente(c), { adicionado: true });
+        });
+
+        clientes = ordenarPorCliente(doArquivo.concat(adicionados));
+        $.each(clientes, function (i, c) { c.indice = i; });
         aplicarBusca();
     }
 
@@ -277,31 +349,61 @@
     }
 
     // ------------------------------------------------------------------
-    // Clientes adicionados (armazenamento local do navegador)
+    // Armazenamento local do navegador (adicionados e alterados)
     // ------------------------------------------------------------------
 
-    function carregarAdicionados() {
+    function lerArmazenamento(chave, padrao) {
         try {
-            var salvo = JSON.parse(window.localStorage.getItem(CONFIG.chaveArmazenamento) || '[]');
-            clientesAdicionados = $.isArray(salvo) ? salvo : [];
+            var salvo = JSON.parse(window.localStorage.getItem(chave));
+            return salvo != null && $.isArray(salvo) === $.isArray(padrao) ? salvo : padrao;
         } catch (e) {
-            clientesAdicionados = [];
+            return padrao;
         }
     }
 
-    function salvarAdicionados() {
+    function gravarArmazenamento(chave, valor) {
         try {
-            window.localStorage.setItem(CONFIG.chaveArmazenamento, JSON.stringify(clientesAdicionados));
+            window.localStorage.setItem(chave, JSON.stringify(valor));
             return true;
         } catch (e) {
             return false;
         }
     }
 
-    function removerAdicionado(banco, servidor) {
-        var alvo = { banco: banco, servidor: servidor };
-        clientesAdicionados = $.grep(clientesAdicionados, function (c) { return !mesmoRegistro(c, alvo); });
-        salvarAdicionados();
+    function carregarArmazenamento() {
+        clientesAdicionados = lerArmazenamento(CONFIG.chaveArmazenamento, []);
+        clientesAlterados = lerArmazenamento(CONFIG.chaveAlteracoes, {});
+    }
+
+    function salvarAdicionados() {
+        return gravarArmazenamento(CONFIG.chaveArmazenamento, clientesAdicionados);
+    }
+
+    function salvarAlteracoes() {
+        return gravarArmazenamento(CONFIG.chaveAlteracoes, clientesAlterados);
+    }
+
+    function indiceAdicionado(cliente) {
+        for (var i = 0; i < clientesAdicionados.length; i++) {
+            if (mesmoRegistro(clientesAdicionados[i], cliente)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    function removerAdicionado(cliente) {
+        var i = indiceAdicionado(cliente);
+        if (i !== -1) {
+            clientesAdicionados.splice(i, 1);
+            salvarAdicionados();
+        }
+        montarListaClientes();
+    }
+
+    function desfazerAlteracao(cliente) {
+        delete clientesAlterados[chaveRegistro(cliente.original)];
+        salvarAlteracoes();
         montarListaClientes();
     }
 
@@ -331,11 +433,27 @@
     }
 
     function abrirCadastro() {
+        emEdicao = null;
         $form[0].reset();
+        $tituloDialogo.text('Adicionar cliente');
         bancoEditadoManualmente = false;
         mostrarErro('');
         dialogo.showModal();
         $campoCliente.trigger('focus');
+    }
+
+    function abrirEdicao(cliente) {
+        emEdicao = cliente;
+        $form[0].reset();
+        $tituloDialogo.text('Alterar cliente');
+        $campoCliente.val(cliente.cliente);
+        $campoBanco.val(cliente.banco);
+        $campoServidor.val(cliente.servidor);
+        // Mantém o banco acompanhando o nome só se ele ainda segue o padrão <cliente>_erp_head
+        bancoEditadoManualmente = cliente.banco !== cliente.cliente + CONFIG.sufixoBanco;
+        mostrarErro('');
+        dialogo.showModal();
+        $campoCliente.trigger('focus').trigger('select');
     }
 
     function fecharCadastro() {
@@ -360,7 +478,12 @@
         if ($.inArray(novo.servidor, servidores) === -1) {
             return { mensagem: 'Selecione um servidor da lista.', $campo: $campoServidor };
         }
-        var duplicado = $.grep(clientes, function (c) { return mesmoRegistro(c, novo); }).length > 0;
+        // Confere a lista exibida e também os registros originais do arquivo
+        // (um cliente alterado não aparece mais com os dados originais).
+        var originalEmEdicao = emEdicao && (emEdicao.original || (!emEdicao.adicionado && emEdicao));
+        var duplicado = $.grep(clientes, function (c) {
+            return c !== emEdicao && mesmoRegistro(c, novo);
+        }).length > 0 || (existeNoArquivo(novo) && !(originalEmEdicao && mesmoRegistro(originalEmEdicao, novo)));
         if (duplicado) {
             return { mensagem: 'O banco ' + novo.banco + ' já está cadastrado no servidor ' + novo.servidor + '.', $campo: $campoBanco };
         }
@@ -382,17 +505,55 @@
             return;
         }
 
-        clientesAdicionados.push(novo);
-        if (!salvarAdicionados()) {
-            clientesAdicionados.pop();
+        if (!gravarCliente(novo)) {
             mostrarErro('Não foi possível salvar no navegador (armazenamento local bloqueado).');
             return;
         }
 
         fecharCadastro();
         montarListaClientes();
-        $campoBusca.val(novo.cliente);
-        aplicarBusca();
+    }
+
+    // Grava no navegador: cadastro novo, alteração de cadastrado local ou
+    // alteração de cliente do arquivo (guardada à parte, o clientes.json não muda).
+    function gravarCliente(novo) {
+        if (!emEdicao) {
+            clientesAdicionados.push(novo);
+            if (!salvarAdicionados()) {
+                clientesAdicionados.pop();
+                return false;
+            }
+            return true;
+        }
+
+        if (emEdicao.adicionado) {
+            var i = indiceAdicionado(emEdicao);
+            var anterior = clientesAdicionados[i];
+            clientesAdicionados[i] = novo;
+            if (!salvarAdicionados()) {
+                clientesAdicionados[i] = anterior;
+                return false;
+            }
+            return true;
+        }
+
+        var original = emEdicao.original || dadosCliente(emEdicao);
+        var chave = chaveRegistro(original);
+        var anteriorAlterado = clientesAlterados[chave];
+        if (mesmosValores(original, novo)) {
+            delete clientesAlterados[chave];
+        } else {
+            clientesAlterados[chave] = novo;
+        }
+        if (!salvarAlteracoes()) {
+            if (anteriorAlterado) {
+                clientesAlterados[chave] = anteriorAlterado;
+            } else {
+                delete clientesAlterados[chave];
+            }
+            return false;
+        }
+        return true;
     }
 
     // Preenche o banco como <cliente>_erp_head até o usuário editá-lo.
@@ -423,12 +584,26 @@
         }
     });
 
-    $lista.on('click', '.botao-remover', function () {
-        var $botao = $(this);
-        var banco = $botao.attr('data-banco');
-        var servidor = $botao.attr('data-servidor');
-        if (window.confirm('Remover o banco ' + banco + ' (' + servidor + ') da lista?')) {
-            removerAdicionado(banco, servidor);
+    $lista.on('click', '.botao-linha', function () {
+        var cliente = clientes[Number($(this).attr('data-indice'))];
+        if (!cliente) {
+            return;
+        }
+        switch ($(this).attr('data-acao')) {
+            case 'editar':
+                abrirEdicao(cliente);
+                break;
+            case 'remover':
+                if (window.confirm('Remover o banco ' + cliente.banco + ' (' + cliente.servidor + ') da lista?')) {
+                    removerAdicionado(cliente);
+                }
+                break;
+            case 'desfazer':
+                if (window.confirm('Desfazer a alteração e voltar para ' + cliente.original.cliente + ' / ' +
+                        cliente.original.banco + ' / ' + cliente.original.servidor + '?')) {
+                    desfazerAlteracao(cliente);
+                }
+                break;
         }
     });
 
@@ -450,7 +625,7 @@
     // Inicialização
     // ------------------------------------------------------------------
 
-    carregarAdicionados();
+    carregarArmazenamento();
     preencherServidores();
     $(carregarClientes);
 
