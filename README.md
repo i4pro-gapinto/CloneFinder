@@ -66,20 +66,6 @@ A ordem dos clientes no arquivo não importa: a página ordena por cliente.
 Um mesmo banco pode existir em mais de um servidor; nesse caso, inclua uma
 entrada para cada servidor.
 
-## Cadastro pela tela (desativado)
-
-O código para cadastrar clientes pela própria página continua em `index.html`
-e `js/app.js`, mas o botão **Adicionar cliente** está comentado no
-`index.html`. Para reativar, remova o comentário `<!-- ... -->` do botão
-`#botao-adicionar`.
-
-Quando ativo, o cadastro pede cliente, banco (sugerido como
-`<cliente>_erp_head`) e servidor, escolhido numa lista fechada com os valores de
-`servidores`. Como o site é estático, o cliente cadastrado fica salvo **apenas
-no navegador de quem cadastrou** (`localStorage`). O botão **Exportar** baixa
-`clientes.json` e `clientes.js` atualizados, que devem substituir os arquivos da
-pasta `data` no repositório.
-
 ## Estrutura
 
 ```
