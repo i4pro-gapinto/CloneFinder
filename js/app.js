@@ -253,7 +253,7 @@
                 renderizarEstado(
                     'Não foi possível carregar os clientes.',
                     'estado--erro',
-                    'O arquivo data/clientes.js não foi encontrado. Rode .\\gerar-clientes.ps1 para gerá-lo.'
+                    'O arquivo data/clientes.js não foi encontrado.'
                 );
                 $resumo.empty();
             }

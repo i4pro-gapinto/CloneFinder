@@ -3,86 +3,14 @@
 Página para localizar em qual servidor SQL (FLASH, FENIX, CICLOPE ou WOLVERINE)
 está o banco de cada cliente e abrir o i4proclone com um clique.
 
+**Acesse:** https://i4pro-gapinto.github.io/CloneFinder/
+
 ## Como usar
 
-**Sem servidor:** dê um duplo clique em `index.html`. Aberta direto do disco
-(`file://`), a página lê os dados de `data/clientes.js`, carregado via
-`<script>`, porque o navegador bloqueia AJAX em arquivos locais. Funciona
-offline: o jQuery está em `js/`. Sem internet, apenas a fonte Inter (Google
-Fonts) não carrega e a página usa a fonte do sistema.
-
-Servida por HTTP, a página lê `data/clientes.json` por AJAX (com
-`data/clientes.js` como reserva). Opções:
-
-1. **PowerShell** (sem instalar nada):
-   ```powershell
-   .\iniciar.ps1
-   ```
-   Abre automaticamente `http://localhost:8080`.
-
-2. **VS Code Live Server**: clique com o botão direito em `index.html` > *Open with Live Server*.
-
-## Atualizar a lista de clientes
-
-Rode o script abaixo. Ele consulta `sys.databases` em FLASH, FENIX, CICLOPE e
-WOLVERINE com autenticação integrada do Windows (somente leitura) e regrava
-`data/clientes.json` e `data/clientes.js` com todos os bancos terminados em `_erp_head`:
-
-```powershell
-.\gerar-clientes.ps1
-```
-
-Se algum servidor não responder, o script avisa e grava apenas os demais.
-Se nenhum responder, o arquivo atual não é alterado.
-
-Um mesmo banco pode existir em mais de um servidor; nesse caso aparece uma
-linha para cada servidor.
-
-## Adicionar cliente pela tela
-
-O botão **Adicionar cliente** abre um cadastro com os mesmos campos do JSON:
-
-- **Cliente**: letras, números, `_` e `-`.
-- **Banco de dados**: preenchido automaticamente como `<cliente>_erp_head`, mas pode ser alterado.
-- **Servidor**: lista fechada com os servidores de `servidores` no JSON (ou
-  FLASH, FENIX, CICLOPE e WOLVERINE). Não é possível digitar outro valor.
-
-Não é aceito um banco que já esteja cadastrado no mesmo servidor.
-
-Como a página não tem servidor para gravar arquivos, o cliente cadastrado fica
-salvo **apenas no navegador de quem cadastrou** (`localStorage`), marcado como
-*novo*, com um **×** para removê-lo. Para que todos vejam, clique em
-**Exportar**: são baixados `clientes.json` e `clientes.js` atualizados, que
-devem substituir os arquivos da pasta `data`. Depois disso, a marca *novo*
-desaparece sozinha.
-
-> O `gerar-clientes.ps1` regrava os arquivos a partir do SQL. Clientes
-> cadastrados à mão cujo banco não exista nos servidores serão perdidos.
-
-## Formato do JSON
-
-Também é possível editar `data/clientes.json` manualmente. Se for usar a
-página sem servidor, aplique a mesma alteração em `data/clientes.js`, que contém
-o mesmo JSON precedido de `window.CLONE_FINDER_DADOS =`:
-
-```json
-{
-  "clientes": [
-    { "cliente": "acme", "banco": "acme_erp_head", "servidor": "FLASH" }
-  ]
-}
-```
-
-| Campo      | Descrição                              |
-|------------|----------------------------------------|
-| `cliente`  | Nome do cliente (usado na pesquisa)    |
-| `banco`    | Nome do banco (`nomeCliente_erp_head`) |
-| `servidor` | FLASH, FENIX, CICLOPE ou WOLVERINE (usado na pesquisa) |
-
-A lista é ordenada por cliente automaticamente. A pesquisa filtra por nome do
-cliente ou por servidor, sem diferenciar maiúsculas e acentos.
-
-## Botões
+1. Digite parte do nome do cliente ou do servidor no campo de pesquisa.
+   A lista é filtrada enquanto você digita, sem diferenciar maiúsculas e acentos.
+   `Esc` ou o **×** limpam a pesquisa.
+2. Na linha do cliente, use os botões:
 
 | Botão  | Abre em nova aba                  | Configuração      |
 |--------|-----------------------------------|-------------------|
@@ -91,15 +19,74 @@ cliente ou por servidor, sem diferenciar maiúsculas e acentos.
 
 As constantes ficam no topo de `js/app.js`.
 
+### Abrir localmente
+
+Também dá para usar sem a internet e sem servidor: baixe o repositório e dê um
+duplo clique em `index.html`. O jQuery está incluído em `js/`; sem internet,
+apenas a fonte Inter não carrega e a página usa a fonte do sistema.
+
+## Atualizar a lista de clientes
+
+Os dados ficam em dois arquivos com o **mesmo conteúdo**:
+
+| Arquivo              | Usado quando                                              |
+|----------------------|-----------------------------------------------------------|
+| `data/clientes.json` | A página é acessada pelo GitHub Pages (carregado por AJAX) |
+| `data/clientes.js`   | O `index.html` é aberto direto do disco (o navegador bloqueia AJAX em `file://`) |
+
+Para incluir, alterar ou remover um cliente:
+
+1. Edite `data/clientes.json`.
+2. Aplique a mesma alteração em `data/clientes.js`. Ele contém o mesmo JSON,
+   precedido de `window.CLONE_FINDER_DADOS =` e terminado em `;`.
+3. Faça commit e push na branch publicada. O GitHub Pages atualiza o site em
+   alguns minutos.
+
+Formato:
+
+```json
+{
+  "geradoEm": "2026-10-08T12:23:10",
+  "servidores": ["FLASH", "FENIX", "CICLOPE", "WOLVERINE"],
+  "clientes": [
+    { "cliente": "acme", "banco": "acme_erp_head", "servidor": "FLASH" }
+  ]
+}
+```
+
+| Campo        | Descrição                                                  |
+|--------------|------------------------------------------------------------|
+| `geradoEm`   | Data da última atualização (informativo)                   |
+| `servidores` | Servidores existentes                                      |
+| `cliente`    | Nome do cliente (usado na pesquisa e na URL do Head)       |
+| `banco`      | Nome do banco (`<cliente>_erp_head`)                       |
+| `servidor`   | Um dos valores de `servidores` (usado na pesquisa e nas URLs) |
+
+A ordem dos clientes no arquivo não importa: a página ordena por cliente.
+Um mesmo banco pode existir em mais de um servidor; nesse caso, inclua uma
+entrada para cada servidor.
+
+## Cadastro pela tela (desativado)
+
+O código para cadastrar clientes pela própria página continua em `index.html`
+e `js/app.js`, mas o botão **Adicionar cliente** está comentado no
+`index.html`. Para reativar, remova o comentário `<!-- ... -->` do botão
+`#botao-adicionar`.
+
+Quando ativo, o cadastro pede cliente, banco (sugerido como
+`<cliente>_erp_head`) e servidor, escolhido numa lista fechada com os valores de
+`servidores`. Como o site é estático, o cliente cadastrado fica salvo **apenas
+no navegador de quem cadastrou** (`localStorage`). O botão **Exportar** baixa
+`clientes.json` e `clientes.js` atualizados, que devem substituir os arquivos da
+pasta `data` no repositório.
+
 ## Estrutura
 
 ```
-index.html          Página
-css/style.css       Estilos (paleta roxo + laranja)
-js/app.js           Carga AJAX e filtro dinâmico (jQuery)
+index.html              Página
+css/style.css           Estilos (paleta roxo + laranja)
+js/app.js               Carga dos dados, filtro e cadastro (jQuery)
 js/jquery-3.7.1.min.js  jQuery local (dispensa CDN)
-data/clientes.json  Dados dos clientes (usado via HTTP)
-data/clientes.js    Mesmos dados em JS (usado ao abrir direto do disco)
-iniciar.ps1         Servidor HTTP local
-gerar-clientes.ps1  Gera data/clientes.json a partir dos servidores SQL
+data/clientes.json      Dados dos clientes (GitHub Pages)
+data/clientes.js        Mesmos dados em JS (abrir direto do disco)
 ```
